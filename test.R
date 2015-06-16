@@ -78,3 +78,22 @@ run_test <- function()
   print(medians)
   print(iqrs)
 }
+
+###################################################################################
+################################### Ryzhov test ###################################
+###################################################################################
+
+n <- c(30, 20, 50, 40, 30)
+m <- 2
+
+data <- matrix(runif(sum(n) * m), sum(n), m)
+
+mixture_probs <- matrix(runif(length(n) * m), length(n), m)
+mixture_probs <- mixture_probs / rowSums(mixture_probs)
+
+censors <- runif(sum(n))
+
+mixture_samples <- get_mixture_samples(n, data, mixture_probs)
+censored_samples <- get_censored_samples(mixture_samples, censors)
+
+
