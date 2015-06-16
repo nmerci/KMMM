@@ -46,11 +46,6 @@ get_KM_GW_estimator <- function(censored_sample)
   
   v[n] <- v[n - 1]
   
-  # remove duplicates
-  unique_times <- !duplicated(censored_sample$time, fromLast=T)
-  S <- S[unique_times]
-  v <- v[unique_times]
-  
   # return
   data.frame(time=censored_sample$time[unique_times], F=1-S, Var=v * S^2)
 }
