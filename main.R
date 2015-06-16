@@ -55,6 +55,16 @@ get_censored_sample <- function(sample, censors)
   data.frame(time=sample, censored=censored)
 }
 
+get_censored_samples <- function(samples, censors)
+{
+  censored_samples <- list()
+  
+  for(i in 1:length(samples))
+    censored_samples[[i]] <- get_censored_sample(samples[[i]], censors[[i]])
+  
+  censored_samples
+}
+
 get_KM_GW_estimator <- function(censored_sample)
 {
   n <- length(censored_sample$time)
