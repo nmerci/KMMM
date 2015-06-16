@@ -1,7 +1,7 @@
 library(matrixStats)
 source("main.R")
 
-test <- function(n, calc_norm=T, correction="n", plot_graphic=F)
+test <- function(n, calc_norm=T, plot_graphic=F)
 {
   m <- 2
   
@@ -13,7 +13,7 @@ test <- function(n, calc_norm=T, correction="n", plot_graphic=F)
   
   censored_sample <- get_censored_sample(mixture_sample, rexp(n, 0.1))
   
-  KMM <- get_KMM_estimator(censored_sample, mixture_probs, correction)
+  KMM <- get_KMM_estimator(censored_sample, mixture_probs)
   
   sorted_sample <- sort(censored_sample$time)
   
@@ -55,7 +55,7 @@ test <- function(n, calc_norm=T, correction="n", plot_graphic=F)
   norm  
 }
 
-run_test <- function(correction)
+run_test <- function()
 {
   medians <- numeric()
   iqrs <- numeric()
@@ -67,7 +67,7 @@ run_test <- function(correction)
   {  
     norm <- numeric()
     for(j in 1:iter)
-      norm <- rbind(norm, test(n[i], T, correction))
+      norm <- rbind(norm, test(n[i]))
     
     medians <- rbind(medians, colMedians(norm, T))
     iqrs <- rbind(iqrs, colIQRs(norm, T))
@@ -75,12 +75,9 @@ run_test <- function(correction)
     print("*")
   }
   
-  print(correction)
   print(medians)
   print(iqrs)
 }
 
-correction <- c("n", "l", "u")
+run_test()
 
-for(i in 1:3)
-  run_test(correction[i])
