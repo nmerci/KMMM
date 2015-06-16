@@ -78,3 +78,5 @@ run_test <- function()
   print(medians)
   print(iqrs)
 }
+
+# run_test()
