@@ -60,64 +60,6 @@ get_KMM_estimator <- function(censored_sample, mixture_probs, correction="n")
   censored_sample$censored <- censored_sample$censored[permutation]
   mixture_weights <- get_mixture_weights(mixture_probs)[, permutation]
   
-  # correction
-  if(correction == "u")
-  {
-    redundancy <- 0
-    for(i in 1:n)
-    {
-      mixture_weights[, i] <- mixture_weights[, i] + redundancy
-      
-      redundancy <- mixture_weights[, i]
-      
-      redundancy[redundancy > 0] <- 0
-      mixture_weights[mixture_weights[, i] < 0, i] <- 0
-    }
-    
-    redundancy <- rowSums(mixture_weights)
-    for(i in n:1)
-    {
-      overlap <- redundancy > 1
-      
-      if(sum(overlap))
-      {
-        redundancy[overlap] <- redundancy[overlap] - mixture_weights[overlap, i]
-        mixture_weights[overlap, i] <- 0
-      }
-      else
-        break      
-    }
-  }
-  
-  if(correction == "l")
-  {
-    redundancy <- 0
-    for(i in n:1)
-    {
-      mixture_weights[, i] <- mixture_weights[, i] + redundancy
-      
-      redundancy <- mixture_weights[, i]
-      
-      redundancy[redundancy > 0] <- 0
-      mixture_weights[mixture_weights[, i] < 0, i] <- 0
-    }
-    
-    redundancy <- rowSums(mixture_weights)
-    for(i in 1:n)
-    {
-      overlap <- redundancy < 0
-      
-      if(sum(overlap))
-      {
-        redundancy[overlap] <- redundancy[overlap] - mixture_weights[overlap, i]
-        mixture_weights[overlap, i] <- 0
-      }
-      else
-        break      
-    }
-  }
-  
-  
   mixture_weights_sums <- cbind(0, mixture_weights[, 1:(n-1)])
   for(i in 3:n)
     mixture_weights_sums[, i] <- mixture_weights_sums[, i] + mixture_weights_sums[, i - 1]
