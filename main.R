@@ -22,7 +22,6 @@ get_mixture_samples <- function(n, data, mixture_probs)
     mixture_samples[[i]] <- get_mixture_sample(data[(accum + 1):(accum + n[i]), ], 
                                                mixture_probs[rep(i, n[i]), ])
     accum <- accum + n[i]
-    
   }
   
   mixture_samples
@@ -59,8 +58,13 @@ get_censored_samples <- function(samples, censors)
 {
   censored_samples <- list()
   
+  accum <- 0
   for(i in 1:length(samples))
-    censored_samples[[i]] <- get_censored_sample(samples[[i]], censors[[i]])
+  {
+    censored_samples[[i]] <- get_censored_sample(samples[[i]], 
+                                                 censors[(accum + 1):(accum + n[i])])
+    accum <- accum + n[i]
+  }
   
   censored_samples
 }
