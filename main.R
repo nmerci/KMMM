@@ -33,6 +33,17 @@ get_mixture_weights <- function(mixture_probs)
   solve(t(mixture_probs) %*% mixture_probs) %*% t(mixture_probs)  
 }
 
+get_weighted_mixture_weights <- function(mixture_probs, mixture_probs_weights)
+{
+  # Here weights corresponds to precision matrix
+  
+  # regularization
+  mixture_probs_weights <- mixture_probs_weights / mean(mixture_probs_weights)
+  
+  solve(t(mixture_probs) %*% mixture_probs_weights %*% mixture_probs) %*% 
+    t(mixture_probs) %*% mixture_probs_weights
+}
+
 get_censored_sample <- function(sample, censors)
 {
   n <- length(sample)
