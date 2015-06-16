@@ -1,11 +1,31 @@
-get_mixture_sample <- function(n, data, mixture_probs)
+get_mixture_sample <- function(data, mixture_probs)
 {
+  n <- nrow(data)
+  
   result <- numeric()
   
   for(i in 1:n)
     result <- c(result, as.numeric(sample(data[i, ], 1, F, mixture_probs[i, ])))
   
   result
+}
+
+get_mixture_samples <- function(n, data, mixture_probs)
+{
+  m <- ncol(mixture_probs)
+  
+  mixture_samples <- list()
+  
+  accum <- 0
+  for(i in 1:length(n))
+  {
+    mixture_samples[[i]] <- get_mixture_sample(data[(accum + 1):(accum + n[i]), ], 
+                                               mixture_probs[rep(i, n[i]), ])
+    accum <- accum + n[i]
+    
+  }
+  
+  mixture_samples
 }
 
 get_mixture_weights <- function(mixture_probs)
