@@ -9,7 +9,7 @@ test <- function(n, calc_norm=T, plot_graphic=F)
   
   mixture_probs <- matrix(c(1:n/n, 1 - 1:n/n), n, 2)
   
-  mixture_sample <- get_mixture_sample(n, data, mixture_probs)
+  mixture_sample <- get_mixture_sample(data, mixture_probs)
   
   censored_sample <- get_censored_sample(mixture_sample, rexp(n, 0.1))
   
