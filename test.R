@@ -1,3 +1,4 @@
+library(matrixStats)
 source("main.R")
 
 test <- function(n, calc_norm=T, correction="n", plot_graphic=F)
@@ -78,8 +79,6 @@ run_test <- function(correction)
   print(medians)
   print(iqrs)
 }
-
-library(matrixStats)
 
 correction <- c("n", "l", "u")
 
