@@ -50,7 +50,7 @@ get_KM_GW_estimator <- function(censored_sample)
   data.frame(time=censored_sample$time[unique_times], F=1-S, Var=v * S^2)
 }
 
-get_KMM_estimator <- function(censored_sample, mixture_probs, correction="n")
+get_KMM_estimator <- function(censored_sample, mixture_probs)
 {
   n <- length(censored_sample$time)
   
