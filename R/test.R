@@ -1,5 +1,5 @@
 library(matrixStats)
-source("main.R")
+source("R/main.R")
 
 test <- function(n, calc_norm=T, plot_graphic=F)
 {
@@ -13,7 +13,7 @@ test <- function(n, calc_norm=T, plot_graphic=F)
   
   censored_sample <- get_censored_sample(mixture_sample, rexp(n, 0.1))
   
-  KMM <- get_KMM_estimator(censored_sample, mixture_probs)
+  KMMM <- get_KMMM_estimator(censored_sample, mixture_probs)
   
   sorted_sample <- sort(censored_sample$time)
   
@@ -22,22 +22,22 @@ test <- function(n, calc_norm=T, plot_graphic=F)
   {
     #     # |N(0, 2)| quantile = 3.289709
     #     # Chi(3)    quantile = 6.251388
-    #     KMM1 <- KMM[1, sorted_sample < 3.289709]
+    #     KMMM1 <- KMMM[1, sorted_sample < 3.289709]
     #     sample1 <- sorted_sample[sorted_sample < 3.289709]
     #     
-    #     KMM2 <- KMM[2, sorted_sample < 6.251388]
+    #     KMMM2 <- KMMM[2, sorted_sample < 6.251388]
     #     sample2 <- sorted_sample[sorted_sample < 6.251388]
     #     
-    #     norm <- c(norm, get_sup_norm(KMM1, pnorm(sample1, 0, 2) - pnorm(-sample1, 0, 2)))
-    #     norm <- c(norm, get_sup_norm(KMM2, pchisq(sample2, 3)))    
+    #     norm <- c(norm, get_sup_norm(KMMM1, pnorm(sample1, 0, 2) - pnorm(-sample1, 0, 2)))
+    #     norm <- c(norm, get_sup_norm(KMMM2, pchisq(sample2, 3)))    
     
-    norm <- c(norm, get_sup_norm(KMM[1, ], pnorm(sorted_sample, 0, 2) - pnorm(-sorted_sample, 0, 2)))
-    norm <- c(norm, get_sup_norm(KMM[2, ], pchisq(sorted_sample, 3))) 
+    norm <- c(norm, get_sup_norm(KMMM[1, ], pnorm(sorted_sample, 0, 2) - pnorm(-sorted_sample, 0, 2)))
+    norm <- c(norm, get_sup_norm(KMMM[2, ], pchisq(sorted_sample, 3))) 
     
     # point 1.85
     point <- match(T, sorted_sample > 1.85)
-    norm <- c(norm, KMM[1, point] - (pnorm(1.85, 0, 2) - pnorm(-1.85, 0, 2)))
-    norm <- c(norm, KMM[2, point] - pchisq(1.85, 3))
+    norm <- c(norm, KMMM[1, point] - (pnorm(1.85, 0, 2) - pnorm(-1.85, 0, 2)))
+    norm <- c(norm, KMMM[2, point] - pchisq(1.85, 3))
   }  
   
   
@@ -45,10 +45,10 @@ test <- function(n, calc_norm=T, plot_graphic=F)
   {
     x <- 0:5000/100
     
-    plot(x=sorted_sample, y=KMM[1, ], type="s", col="red")
+    plot(x=sorted_sample, y=KMMM[1, ], type="s", col="red")
     lines(x=x, y=pnorm(x, 0, 2) - pnorm(-x, 0, 2))
     
-    plot(x=sorted_sample, y=KMM[2, ], type="s", col="red")
+    plot(x=sorted_sample, y=KMMM[2, ], type="s", col="red")
     lines(x=x, y=pchisq(x, 3))
   }
   
