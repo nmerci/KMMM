@@ -1,7 +1,7 @@
 library(matrixStats)
 source("R/main.R")
 
-test <- function(n, calc_norm=T, plot_graphic=F)
+test_KMMM <- function(n, calc_norm=T, plot_graphic=F)
 {
   m <- 2
   
@@ -67,7 +67,7 @@ run_test <- function()
   {  
     norm <- numeric()
     for(j in 1:iter)
-      norm <- rbind(norm, test(n[i]))
+      norm <- rbind(norm, test_KMMM(n[i]))
     
     medians <- rbind(medians, colMedians(norm, T))
     iqrs <- rbind(iqrs, colIQRs(norm, T))
@@ -83,17 +83,28 @@ run_test <- function()
 ################################### Ryzhov test ###################################
 ###################################################################################
 
-n <- c(30, 20, 50, 40, 30)
-m <- 2
+test_Ryzhov <- function()
+{
+  n <- c(30, 20, 50, 40, 30)
+  m <- 2
+  
+  data <- cbind(runif(sum(n)), rchisq(sum(n), 1))
+  
+  mixture_probs <- matrix(runif(length(n) * m), length(n), m)
+  mixture_probs <- mixture_probs / rowSums(mixture_probs)
+  
+  censors <- runif(sum(n))
+  
+  mixture_samples <- get_mixture_samples(n, data, mixture_probs)
+  censored_samples <- get_censored_samples(mixture_samples, censors)
+  
+  get_Ryzhov_estimator(censored_samples, mixture_probs)
+}
 
-data <- matrix(runif(sum(n) * m), sum(n), m)
 
-mixture_probs <- matrix(runif(length(n) * m), length(n), m)
-mixture_probs <- mixture_probs / rowSums(mixture_probs)
-
-censors <- runif(sum(n))
-
-mixture_samples <- get_mixture_samples(n, data, mixture_probs)
-censored_samples <- get_censored_samples(mixture_samples, censors)
+unpack_samples <- function(censored_samples, mixture_probs)
+{
+  # TODO
+}
 
 
