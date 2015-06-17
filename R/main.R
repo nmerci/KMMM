@@ -110,7 +110,45 @@ get_KM_GW_estimator <- function(censored_sample)
 
 get_Ryzhov_estimator <- function(censored_samples, mixture_probs)
 {
-  # TODO
+  KM_GW_estimators <- list()
+  for(i in 1:length(censored_samples))
+    KM_GW_estimators[[i]] <- get_KM_GW_estimator(censored_samples[[i]])
+  
+  time <- numeric()
+  H <- numeric()
+
+  for(i in 1:length(KM_GW_estimators))
+  {
+    for(j in 1:length(KM_GW_estimators[[i]]$time))
+    {
+      t0 <- KM_GW_estimators[[i]]$time[j]
+      
+      KM_F <- numeric()
+      KM_Var <- numeric()
+      
+      for(k in 1:length(KM_GW_estimators))
+      {
+        t0_position <- match(F, t0 > KM_GW_estimators[[k]]$time)
+        if(is.na(t0_position))
+          t0_position <- length(KM_GW_estimators[[k]]$time)
+        
+        KM_F <- c(KM_F, KM_GW_estimators[[k]]$F[t0_position])
+        KM_Var <- c(KM_Var, KM_GW_estimators[[k]]$Var[t0_position])
+      }
+      
+      precision <- diag(1/KM_Var)
+      if(max(precision) < Inf)
+      {
+        time <- c(time, t0)
+        H <- cbind(H, get_weighted_mixture_weights(mixture_probs, precision) %*% KM_F)
+      }
+    }
+  }
+  
+  permutation <- order(time)
+  H <- H[, permutation]
+ 
+  cbind(time[permutation], t(H))
 }
 
 get_KMMM_estimator <- function(censored_sample, mixture_probs)
