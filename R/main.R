@@ -69,14 +69,28 @@ get_censored_samples <- function(samples, censors)
   censored_samples
 }
 
+sort_censored_sample <- function(censored_sample, mixture_probs=numeric())
+{
+  permutation <- order(censored_sample$time) 
+
+  censored_sample$time <- censored_sample$time[permutation]
+  censored_sample$censored <- censored_sample$censored[permutation]
+  
+  if(length(mixture_probs))
+  {
+    mixture_weights <- get_mixture_weights(mixture_probs)[, permutation]
+    censored_sample <- list(sample=censored_sample, weights=mixture_weights)
+  }
+
+  censored_sample
+}
+
 get_KM_GW_estimator <- function(censored_sample)
 {
   n <- length(censored_sample$time)
   
   # sort sample
-  permutation <- order(censored_sample$time)  
-  censored_sample$time <- censored_sample$time[permutation]
-  censored_sample$censored <- censored_sample$censored[permutation]
+  censored_sample <- sort_censored_sample(censored_sample)
   
   # estimate survival function
   S <- 1 - censored_sample$censored[1] / n  
@@ -92,19 +106,24 @@ get_KM_GW_estimator <- function(censored_sample)
   v[n] <- v[n - 1]
   
   # return
-  data.frame(time=censored_sample$time[unique_times], F=1-S, Var=v * S^2)
+  data.frame(time=censored_sample$time, F=1-S, Var=v * S^2)
 }
 
-get_KMM_estimator <- function(censored_sample, mixture_probs)
+get_Ryzhov_estimator <- function(censored_samples, mixture_probs)
+{
+  # TODO
+}
+
+get_KMMM_estimator <- function(censored_sample, mixture_probs)
 {
   n <- length(censored_sample$time)
   
-  permutation <- order(censored_sample$time)
+  # sort sample
+  censored_sample <- sort_censored_sample(censored_sample, mixture_probs)
+  mixture_weights <- censored_sample$weights
+  censored_sample <- censored_sample$sample
   
-  censored_sample$time <- censored_sample$time[permutation]
-  censored_sample$censored <- censored_sample$censored[permutation]
-  mixture_weights <- get_mixture_weights(mixture_probs)[, permutation]
-  
+  # estimate survival function
   mixture_weights_sums <- cbind(0, mixture_weights[, 1:(n-1)])
   for(i in 3:n)
     mixture_weights_sums[, i] <- mixture_weights_sums[, i] + mixture_weights_sums[, i - 1]
