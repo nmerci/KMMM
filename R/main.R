@@ -35,8 +35,7 @@ get_mixture_weights <- function(mixture_probs)
 get_weighted_mixture_weights <- function(mixture_probs, mixture_probs_weights)
 {
   # Here weights corresponds to precision matrix
-  
-  # regularization
+  # Preconditioning
   mixture_probs_weights <- mixture_probs_weights / mean(mixture_probs_weights)
   
   solve(t(mixture_probs) %*% mixture_probs_weights %*% mixture_probs) %*% 
