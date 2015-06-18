@@ -61,8 +61,8 @@ get_censored_samples <- function(samples, censors)
   for(i in 1:length(samples))
   {
     censored_samples[[i]] <- get_censored_sample(samples[[i]], 
-                                                 censors[(accum + 1):(accum + n[i])])
-    accum <- accum + n[i]
+                                                 censors[(accum + 1):(accum + length(samples[[i]]))])
+    accum <- accum + length(samples[[i]])
   }
   
   censored_samples
