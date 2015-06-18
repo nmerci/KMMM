@@ -79,10 +79,6 @@ run_test <- function()
   print(iqrs)
 }
 
-###################################################################################
-################################### Ryzhov test ###################################
-###################################################################################
-
 test_Ryzhov <- function()
 {
   n <- c(30, 20, 50, 40, 30)
@@ -98,13 +94,20 @@ test_Ryzhov <- function()
   mixture_samples <- get_mixture_samples(n, data, mixture_probs)
   censored_samples <- get_censored_samples(mixture_samples, censors)
   
-  get_Ryzhov_estimator(censored_samples, mixture_probs)
+  ryzhov <- get_Ryzhov_estimator(censored_samples, mixture_probs)
 }
 
-
-unpack_samples <- function(censored_samples, mixture_probs)
+compare_KMMM_Ryzhov <- function(censored_samples, mixture_probs)
 {
-  # TODO
+  n <- sapply(censored_samples, nrow)
+  
+  ryzhov <- get_Ryzhov_estimator(censored_samples, mixture_probs)
+  
+  KMMM <- get_KMMM_estimator(do.call("rbind", censored_samples),
+                             mixture_probs[rep(1:length(n), times=n), ])
+  
+  list(KMMM, ryzhov)
 }
+
 
 

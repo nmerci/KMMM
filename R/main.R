@@ -169,7 +169,7 @@ get_KMMM_estimator <- function(censored_sample, mixture_probs)
   for(i in 2:n)
     H[, i] <- H[, i] * H[, i - 1]
   
-  1 - H  
+  cbind(censored_sample$time, t(1 - H))
 }
 
 get_sup_norm <- function(y_estimate, y_true)
