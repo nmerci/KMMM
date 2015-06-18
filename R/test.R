@@ -123,6 +123,46 @@ compare_KMMM_Ryzhov <- function(censored_samples, mixture_probs)
   list(KMMM, ryzhov)
 }
 
+compare_sup_norm <- function(KMMM_Ryzhov, true_values)
+{
+  m <- 2
+  norm <- numeric()
+  KMMM_Ryzhov[[1]] <- KMMM_Ryzhov[[1]][1:length(KMMM_Ryzhov[[2]][, 1]), ]
+
+  for(i in 1:2)
+    for(j in 1:2)
+      norm <- c(norm, get_sup_norm(KMMM_Ryzhov[[i]][, j+1], true_values[, j]))
+  
+  norm
+}
+
+n <- rep(100, 10)
+data <- cbind(rchisq(sum(n), 1), rexp(sum(n), 1))
+censors <- runif(sum(n), 0, 5) # ~20% censored
+
+censored_data <- generate_data(n, data, censors)
+
+KMMM_Ryzhov <- compare_KMMM_Ryzhov(censored_data$censored_samples,
+                                   censored_data$mixture_probs)
+
+KMMM_Ryzhov[[1]] <- KMMM_Ryzhov[[1]][1:length(KMMM_Ryzhov[[2]][, 1]), ]
+
+plot (x=KMMM_Ryzhov[[1]][, 1], 
+      y=KMMM_Ryzhov[[1]][, 2] - pchisq(KMMM_Ryzhov[[1]][, 1], 1),
+      type="s", col="red", main="10x100 obs. with 20% censoring", 
+      xlab="red=Khizanov, blue=Ryzhov", ylab="ChiSq(1)")
+lines(x=KMMM_Ryzhov[[1]][, 1],
+      y=KMMM_Ryzhov[[2]][, 2] - pchisq(KMMM_Ryzhov[[1]][, 1], 1),
+      type="s", col="blue")
+
+plot (x=KMMM_Ryzhov[[1]][, 1], 
+      y=KMMM_Ryzhov[[1]][, 3] - pexp(KMMM_Ryzhov[[1]][, 1], 1),
+      type="s", col="red", main="10x100 obs. with 20% censoring",
+      xlab="red=Khizanov, blue=Ryzhov", ylab="Exp(1)")
+lines(x=KMMM_Ryzhov[[1]][, 1],
+      y=KMMM_Ryzhov[[2]][, 3] - pexp(KMMM_Ryzhov[[1]][, 1], 1),
+      type="s", col="blue")
+
 
 
 
