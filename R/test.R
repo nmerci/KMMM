@@ -97,6 +97,20 @@ test_Ryzhov <- function()
   ryzhov <- get_Ryzhov_estimator(censored_samples, mixture_probs)
 }
 
+generate_data <- function(n, data, censors)
+{
+  m <- ncol(data)
+  
+  mixture_probs <- matrix(runif(length(n) * m), length(n), m)
+  mixture_probs <- mixture_probs / rowSums(mixture_probs)
+  
+  mixture_samples <- get_mixture_samples(n, data, mixture_probs)
+  censored_samples <- get_censored_samples(mixture_samples, censors)
+  
+  list(censored_samples=get_censored_samples(mixture_samples, censors),
+       mixture_probs=mixture_probs)
+}
+
 compare_KMMM_Ryzhov <- function(censored_samples, mixture_probs)
 {
   n <- sapply(censored_samples, nrow)
@@ -108,6 +122,8 @@ compare_KMMM_Ryzhov <- function(censored_samples, mixture_probs)
   
   list(KMMM, ryzhov)
 }
+
+
 
 
 
