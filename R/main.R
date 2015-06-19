@@ -97,11 +97,7 @@ get_KM_GW_estimator <- function(censored_sample)
     S[i] <- S[i - 1] * (1 - censored_sample$censored[i] / (n - i + 1))
   
   # estimate variance
-  v <- censored_sample$censored[1] / (n * (n - censored_sample$censored[1]))
-  for(i in 2:n)
-    v[i] <- v[i - 1] + censored_sample$censored[i] / 
-    ((n - i + 1) * (n - i + 1 - censored_sample$censored[i]))
-  
+  v <- cumsum(censored_sample$censored / ((n:1) * ((n-1):0)))
   v[n] <- v[n - 1]
   
   # return
