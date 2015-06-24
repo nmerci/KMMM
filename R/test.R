@@ -11,11 +11,9 @@ test_KMMM <- function(n, calc_norm=T, plot_graphic=F)
   
   mixture_sample <- get_mixture_sample(data, mixture_probs)
   
-  censored_sample <- get_censored_sample(mixture_sample, rexp(n, 0.1))
+  censored_sample <- get_censored_sample(mixture_sample, rexp(n, 0.05))
   
   KMMM <- get_KMMM_estimator(censored_sample, mixture_probs)
-  
-  sorted_sample <- sort(censored_sample$time)
   
   norm <- numeric()
   if(calc_norm == T)
@@ -31,13 +29,13 @@ test_KMMM <- function(n, calc_norm=T, plot_graphic=F)
     #     norm <- c(norm, get_sup_norm(KMMM1, pnorm(sample1, 0, 2) - pnorm(-sample1, 0, 2)))
     #     norm <- c(norm, get_sup_norm(KMMM2, pchisq(sample2, 3)))    
     
-    norm <- c(norm, get_sup_norm(KMMM[1, ], pnorm(sorted_sample, 0, 2) - pnorm(-sorted_sample, 0, 2)))
-    norm <- c(norm, get_sup_norm(KMMM[2, ], pchisq(sorted_sample, 3))) 
+    norm <- c(norm, get_sup_norm(KMMM[, 2], pnorm(KMMM[, 1], 0, 2) - pnorm(-KMMM[, 1], 0, 2)))
+    norm <- c(norm, get_sup_norm(KMMM[, 3], pchisq(KMMM[, 1], 3))) 
     
     # point 1.85
-    point <- match(T, sorted_sample > 1.85)
-    norm <- c(norm, KMMM[1, point] - (pnorm(1.85, 0, 2) - pnorm(-1.85, 0, 2)))
-    norm <- c(norm, KMMM[2, point] - pchisq(1.85, 3))
+    point <- match(T, KMMM[, 1] > 1.85)
+    norm <- c(norm, KMMM[point, 2] - (pnorm(1.85, 0, 2) - pnorm(-1.85, 0, 2)))
+    norm <- c(norm, KMMM[point, 3] - pchisq(1.85, 3))
   }  
   
   
@@ -45,10 +43,10 @@ test_KMMM <- function(n, calc_norm=T, plot_graphic=F)
   {
     x <- 0:5000/100
     
-    plot(x=sorted_sample, y=KMMM[1, ], type="s", col="red")
+    plot(x=KMMM[, 1], y=KMMM[, 2], type="s", col="red")
     lines(x=x, y=pnorm(x, 0, 2) - pnorm(-x, 0, 2))
     
-    plot(x=sorted_sample, y=KMMM[2, ], type="s", col="red")
+    plot(x=KMMM[, 1], y=KMMM[, 3], type="s", col="red")
     lines(x=x, y=pchisq(x, 3))
   }
   
@@ -61,7 +59,7 @@ run_test <- function()
   iqrs <- numeric()
   
   n <- c(100, 250, 500, 1000, 2000)
-  iter <- 1000
+  iter <- 100
   
   for(i in 1:length(n))
   {  
@@ -136,7 +134,7 @@ compare_sup_norm <- function(KMMM_Ryzhov, true_values)
   norm
 }
 
-n <- rep(100, 10)
+n <- round(runif(round(runif(1, 2, 5)), 2, 10000))
 data <- cbind(rchisq(sum(n), 1), rexp(sum(n), 1))
 censors <- runif(sum(n), 0, 5) # ~20% censored
 
@@ -149,7 +147,7 @@ KMMM_Ryzhov[[1]] <- KMMM_Ryzhov[[1]][1:length(KMMM_Ryzhov[[2]][, 1]), ]
 
 plot (x=KMMM_Ryzhov[[1]][, 1], 
       y=KMMM_Ryzhov[[1]][, 2] - pchisq(KMMM_Ryzhov[[1]][, 1], 1),
-      type="s", col="red", main="10x100 obs. with 20% censoring", 
+      type="s", col="red", main="4x5000 obs. with 20% censoring", 
       xlab="red=Khizanov, blue=Ryzhov", ylab="ChiSq(1)")
 lines(x=KMMM_Ryzhov[[1]][, 1],
       y=KMMM_Ryzhov[[2]][, 2] - pchisq(KMMM_Ryzhov[[1]][, 1], 1),
@@ -157,13 +155,18 @@ lines(x=KMMM_Ryzhov[[1]][, 1],
 
 plot (x=KMMM_Ryzhov[[1]][, 1], 
       y=KMMM_Ryzhov[[1]][, 3] - pexp(KMMM_Ryzhov[[1]][, 1], 1),
-      type="s", col="red", main="10x100 obs. with 20% censoring",
+      type="s", col="red", main="4x5000 obs. with 20% censoring",
       xlab="red=Khizanov, blue=Ryzhov", ylab="Exp(1)")
 lines(x=KMMM_Ryzhov[[1]][, 1],
       y=KMMM_Ryzhov[[2]][, 3] - pexp(KMMM_Ryzhov[[1]][, 1], 1),
       type="s", col="blue")
 
-
+y_true <- cbind(pchisq(KMMM_Ryzhov[[1]][, 1], 1), pexp(KMMM_Ryzhov[[1]][, 1], 1))
+norm <- numeric()
+for(i in 1:2)
+  for(j in 1:2)
+    norm <- c(norm, get_sup_norm(KMMM_Ryzhov[[i]][, j], y_true[, j]))
+norm
 
 
 
