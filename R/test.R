@@ -41,13 +41,13 @@ test_KMMM <- function(n, calc_norm=T, plot_graphic=F)
   
   if(plot_graphic==T) 
   {
-    x <- 0:5000/100
+    #x <- 0:5000/100
     
-    plot(x=KMMM[, 1], y=KMMM[, 2], type="s", col="red")
-    lines(x=x, y=pnorm(x, 0, 2) - pnorm(-x, 0, 2))
+    plot(x=KMMM[, 1], y=KMMM[, 2] - (pnorm(KMMM[, 1], 0, 2) - pnorm(-KMMM[, 1], 0, 2)), type="s", col="red")
+    #lines(x=x, y=pnorm(x, 0, 2) - pnorm(-x, 0, 2))
     
-    plot(x=KMMM[, 1], y=KMMM[, 3], type="s", col="red")
-    lines(x=x, y=pchisq(x, 3))
+    plot(x=KMMM[, 1], y=KMMM[, 3] - pchisq(KMMM[, 1], 3), type="s", col="red")
+    #lines(x=x, y=pchisq(x, 3))
   }
   
   norm  
@@ -109,6 +109,27 @@ generate_data <- function(n, data, censors)
        mixture_probs=mixture_probs)
 }
 
+generate_ryzhov_data <- function()
+{
+  ryzhov_data <- read.csv("data/ryzhov_data.txt", T, "\t")
+  
+  censored_samples <- list()
+  mixture_probs <- numeric()
+  
+  for(i in 1:27)
+  {
+    censored_samples[[i]] <- data.frame(time=ryzhov_data[ryzhov_data[, 4] == i, 1],
+                                        censored=ryzhov_data[ryzhov_data[, 4] == i, 2])
+    
+    mixture_probs <- rbind(mixture_probs, c(sum(ryzhov_data[ryzhov_data[, 4] == i, 3] == 1),
+                                            sum(ryzhov_data[ryzhov_data[, 4] == i, 3] == 2)))
+  }
+  
+  mixture_probs <- mixture_probs / rowSums(mixture_probs)
+  
+  list(censored_samples=censored_samples, mixture_probs=mixture_probs)
+}
+
 compare_KMMM_Ryzhov <- function(censored_samples, mixture_probs)
 {
   n <- sapply(censored_samples, nrow)
@@ -133,6 +154,8 @@ compare_sup_norm <- function(KMMM_Ryzhov, true_values)
   
   norm
 }
+
+
 
 n <- round(runif(round(runif(1, 2, 5)), 2, 10000))
 data <- cbind(rchisq(sum(n), 1), rexp(sum(n), 1))
