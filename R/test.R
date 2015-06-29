@@ -130,7 +130,7 @@ generate_ryzhov_data <- function()
   list(censored_samples=censored_samples, mixture_probs=mixture_probs)
 }
 
-compare_KMMM_Ryzhov <- function(censored_samples, mixture_probs)
+compare_KMMM_Ryzhov <- function(censored_samples, mixture_probs, true_data=NA)
 {
   n <- sapply(censored_samples, nrow)
   
@@ -138,58 +138,87 @@ compare_KMMM_Ryzhov <- function(censored_samples, mixture_probs)
   
   KMMM <- get_KMMM_estimator(do.call("rbind", censored_samples),
                              mixture_probs[rep(1:length(n), times=n), ])
+  KMMM <- KMMM[1:nrow(ryzhov), ]
   
-  list(KMMM, ryzhov)
+  if(length(true_data) == 0)
+    return(list(KMMM, ryzhov))
+  else
+  {
+    true_data <- true_data[1:nrow(ryzhov), ]
+    norm <- numeric()
+    for(i in 1:ncol(mixture_probs))
+      norm <- c(norm, c(max(abs(KMMM[, i + 1] - true_data[, i])), 
+                        max(abs(ryzhov[, i + 1] - true_data[, i]))))
+    
+    return(list(KMMM, ryzhov, norm))
+  }
 }
 
-compare_sup_norm <- function(KMMM_Ryzhov, true_values)
+test_KMMM_Ryzhov <- function(n, calc_norm=T, plot_graphic=F)
 {
-  m <- 2
-  norm <- numeric()
-  KMMM_Ryzhov[[1]] <- KMMM_Ryzhov[[1]][1:length(KMMM_Ryzhov[[2]][, 1]), ]
-
-  for(i in 1:2)
-    for(j in 1:2)
-      norm <- c(norm, get_sup_norm(KMMM_Ryzhov[[i]][, j+1], true_values[, j]))
+  data <- cbind(rchisq(sum(n), 1), rexp(sum(n), 1))
+  censors <- runif(sum(n), 0, 5) # ~20% censored
   
-  norm
+  censored_data <- generate_data(n, data, censors)
+  
+  true_data <- sort(do.call("rbind", censored_data$censored_samples)[, 1])
+  true_data <- cbind(pchisq(true_data, 1), pexp(true_data, 1))
+  
+  KMMM_Ryzhov <- compare_KMMM_Ryzhov(censored_data$censored_samples,
+                                     censored_data$mixture_probs,
+                                     true_data)
+  
+  if(plot_graphic == T)
+  {
+    plot (x=KMMM_Ryzhov[[1]][, 1],
+          y=KMMM_Ryzhov[[2]][, 2] - pchisq(KMMM_Ryzhov[[1]][, 1], 1),
+          type="s", col="blue")
+    lines(x=KMMM_Ryzhov[[1]][, 1], 
+          y=KMMM_Ryzhov[[1]][, 2] - pchisq(KMMM_Ryzhov[[1]][, 1], 1),
+          type="s", col="red")
+    
+    plot (x=KMMM_Ryzhov[[1]][, 1],
+          y=KMMM_Ryzhov[[2]][, 3] - pexp(KMMM_Ryzhov[[1]][, 1], 1),
+          type="s", col="blue")
+    lines(x=KMMM_Ryzhov[[1]][, 1], 
+          y=KMMM_Ryzhov[[1]][, 3] - pexp(KMMM_Ryzhov[[1]][, 1], 1),
+          type="s", col="red")
+  }
+  
+  KMMM_Ryzhov[[3]]
 }
 
 
-
-n <- round(runif(round(runif(1, 2, 5)), 2, 10000))
-data <- cbind(rchisq(sum(n), 1), rexp(sum(n), 1))
-censors <- runif(sum(n), 0, 5) # ~20% censored
-
-censored_data <- generate_data(n, data, censors)
-
-KMMM_Ryzhov <- compare_KMMM_Ryzhov(censored_data$censored_samples,
-                                   censored_data$mixture_probs)
-
-KMMM_Ryzhov[[1]] <- KMMM_Ryzhov[[1]][1:length(KMMM_Ryzhov[[2]][, 1]), ]
-
-plot (x=KMMM_Ryzhov[[1]][, 1], 
-      y=KMMM_Ryzhov[[1]][, 2] - pchisq(KMMM_Ryzhov[[1]][, 1], 1),
-      type="s", col="red", main="4x5000 obs. with 20% censoring", 
-      xlab="red=Khizanov, blue=Ryzhov", ylab="ChiSq(1)")
-lines(x=KMMM_Ryzhov[[1]][, 1],
-      y=KMMM_Ryzhov[[2]][, 2] - pchisq(KMMM_Ryzhov[[1]][, 1], 1),
-      type="s", col="blue")
-
-plot (x=KMMM_Ryzhov[[1]][, 1], 
-      y=KMMM_Ryzhov[[1]][, 3] - pexp(KMMM_Ryzhov[[1]][, 1], 1),
-      type="s", col="red", main="4x5000 obs. with 20% censoring",
-      xlab="red=Khizanov, blue=Ryzhov", ylab="Exp(1)")
-lines(x=KMMM_Ryzhov[[1]][, 1],
-      y=KMMM_Ryzhov[[2]][, 3] - pexp(KMMM_Ryzhov[[1]][, 1], 1),
-      type="s", col="blue")
-
-y_true <- cbind(pchisq(KMMM_Ryzhov[[1]][, 1], 1), pexp(KMMM_Ryzhov[[1]][, 1], 1))
+iter <- 100
+n <- rep(500, 2)
 norm <- numeric()
-for(i in 1:2)
-  for(j in 1:2)
-    norm <- c(norm, get_sup_norm(KMMM_Ryzhov[[i]][, j], y_true[, j]))
+
+for(i in 1:iter)
+{
+  norm <- rbind(norm, test_KMMM_Ryzhov(n))
+}
+
+colnames(norm) <- c("K1", "R1", "K2", "R2")
+
 norm
 
+
+par(oma=c(0,0,2,0)) 
+par(mfrow=c(2,2))
+
+main_titles <- c("Khizanov", "Ryzhov")
+y_titles <- c("ChiSq(1)", "Exp(1)")
+
+for(i in 1:2)
+  for(j in 1:2)
+    hist(x=norm[, (i - 1)*2 + j], breaks=10, 
+         main=main_titles[j],
+         xlab=paste("Med=", round(median(norm[, (i - 1)*2 + j], T), 5), 
+                    "; IQR=", round(IQR(norm[, (i - 1)*2 + j], T), 5)),
+         ylab=y_titles[i])
+
+
+
+title(main="2 sampl. with 500 obs. (~20% censored)",outer=T)
 
 
