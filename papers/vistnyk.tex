@@ -1,0 +1,67 @@
+\documentclass[12pt,reqno,a4paper,oneside,draft]{article}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem*{defn}{Definition}
+\newtheorem{exmp}{Example}[section]
+
+\theoremstyle{remark}
+\newtheorem*{rem}{Remark}
+
+\begin{document}
+
+\tableofcontents
+
+
+\section{Introduction}
+\label{sec:Introduction}
+A problem of lifetime distribution estimation from randomly right-censored observations naturally appears in actuarial and medical statistics as well as in device reliability analysis $\#$. In case of independent identically distributed observations \emph{Kaplan-Meier estimator} is usually used $\#$. Consider a model in which each observation is drawn from a finite mixture of distributions. If mixture probabilities (concentrations) varies through the observations, this model is called \emph{mixture model with varying concentrations}. A modification of Kaplan-Meier estimator for this model has already been discussed by V. Khizanov, R. Maiboroda and A. Ryzhov in papers $\#$. In this paper two different estimators (modifications) are compared via numerical simulations.
+
+The problem statement is formulated in Section \ref{sec:Problem_statement}. Sections \ref{sec:Simulation_description} and \ref{sec:Simulation_results} are devoted to description and results of simulations respectively. Conclusions are presented in Section \ref{sec:Conclusions}.
+
+\section{Problem statement}
+\label{sec:Problem_statement}
+Let $\mathcal O = \{O_j\}_{j=1}^n$ be a sample from mixture model with varying concentrations. Each $O_j$ belongs to one of $M$ components which is denoted by $\mathrm{ind}(O_j)$. Suppose that the true value of $\mathrm{ind}(O_j)$ is not observed. Instead, one is provided with \emph{mixture probabilities}
+\begin{equation}
+w_j^m = \mathbb P(\mathrm{ind}(O_j) = m)\, ,m=1,\ldots, M
+\end{equation}
+For each object $O_j$ there exists a positive characteristic $\xi _j = \xi (O_j)$ which is treated as a lifetime. Distribution of each $\xi _j$ depends on the component it belongs to, i.e.:
+\begin{equation}
+F_m (A) = \mathbb P(\xi _j \in A \mid \mathrm{ind}(O_j) = m)\, , m=1,\ldots , M
+\end{equation}
+
+Consider the case in which \emph{true data} $\mathcal D = \{\xi _j\}_{j=1}^n$ are randomly right-censored. That is there exists a sequence of positive random variables $\{c_j\}_{j=1}^n$ such that only \emph{censored data} $\mathcal D^c = \{(\xi _j^*, \delta _j)\}_{j=1}^n$, where $\xi _j^* = \min (\xi _j, c_j)$ and $\delta _j = \mathbf 1\{\xi _j \leq c_j\}$ for each $j=1,\ldots ,n$, are observed. Here, $c_j$'s are called \emph{censors} and their conditional distributions are given by:
+\begin{equation}
+G_m (A) = \mathbb P(c _j \in A \mid \mathrm{ind}(O_j) = m)\, , m=1,\ldots , M
+\end{equation} 
+
+One problem is to estimate conditional distributions $\{F_m\}_{m=1}^M$ from censored data $\mathcal D^c$ and mixture probabilities $\mathbf W = (w_j^m)_{j,m=1}^{n,M}$. Vectors $(\xi _j, c _j)$ are assumed to be independent as well as variables $\xi _j$ and $c_j$ are conditionally independent given $\mathrm{ind}(O_j)$ for each $j=1,\ldots ,n$. Two solutions for this problem are considered in subsequent sections.
+
+\subsection{Ryzhov estimator}
+
+\subsection{Khizanov-Maiboroda estimator}
+
+
+\section{Simulation description}
+\label{sec:Simulation_description}
+
+\section{Simulation results}
+\label{sec:Simulation_results}
+
+\section{Conclusions}
+\label{sec:Conclusions}
+
+
+
+
+\end{document}
