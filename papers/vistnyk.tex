@@ -33,23 +33,58 @@ The problem statement is formulated in Section \ref{sec:Problem_statement}. Sect
 \label{sec:Problem_statement}
 Let $\mathcal O = \{O_j\}_{j=1}^n$ be a sample from mixture model with varying concentrations. Each $O_j$ belongs to one of $M$ components which is denoted by $\mathrm{ind}(O_j)$. Suppose that the true value of $\mathrm{ind}(O_j)$ is not observed. Instead, one is provided with \emph{mixture probabilities}
 \begin{equation}
-w_j^m = \mathbb P(\mathrm{ind}(O_j) = m)\, ,m=1,\ldots, M
+\label{eq:mixture_probabilities}
+w_j^m = \mathbb P(\mathrm{ind}(O_j) = m), \, m=1,\ldots, M
 \end{equation}
 For each object $O_j$ there exists a positive characteristic $\xi _j = \xi (O_j)$ which is treated as a lifetime. Distribution of each $\xi _j$ depends on the component it belongs to, i.e.:
 \begin{equation}
-F_m (A) = \mathbb P(\xi _j \in A \mid \mathrm{ind}(O_j) = m)\, , m=1,\ldots , M
+\label{eq:conditional_distribution}
+F_m (A) = \mathbb P(\xi _j \in A \mid \mathrm{ind}(O_j) = m), \, m=1,\ldots , M
 \end{equation}
 
 Consider the case in which \emph{true data} $\mathcal D = \{\xi _j\}_{j=1}^n$ are randomly right-censored. That is there exists a sequence of positive random variables $\{c_j\}_{j=1}^n$ such that only \emph{censored data} $\mathcal D^c = \{(\xi _j^*, \delta _j)\}_{j=1}^n$, where $\xi _j^* = \min (\xi _j, c_j)$ and $\delta _j = \mathbf 1\{\xi _j \leq c_j\}$ for each $j=1,\ldots ,n$, are observed. Here, $c_j$'s are called \emph{censors} and their conditional distributions are given by:
 \begin{equation}
-G_m (A) = \mathbb P(c _j \in A \mid \mathrm{ind}(O_j) = m)\, , m=1,\ldots , M
+G_m (A) = \mathbb P(c _j \in A \mid \mathrm{ind}(O_j) = m),\, m=1,\ldots , M
 \end{equation} 
 
-One problem is to estimate conditional distributions $\{F_m\}_{m=1}^M$ from censored data $\mathcal D^c$ and mixture probabilities $\mathbf W = (w_j^m)_{j,m=1}^{n,M}$. Vectors $(\xi _j, c _j)$ are assumed to be independent as well as variables $\xi _j$ and $c_j$ are conditionally independent given $\mathrm{ind}(O_j)$ for each $j=1,\ldots ,n$. Two solutions for this problem are considered in subsequent sections.
+One problem is to estimate conditional distributions $\{F_m\}_{m=1}^M$ from censored data $\mathcal D^c$ and mixture probabilities $\mathbf W = (w_j^m)_{j,m=1}^{n,M}$. Vectors $(\xi _j, c _j)$ are assumed to be independent as well as variables $\xi _j$ and $c_j$ are conditionally independent given $\mathrm{ind}(O_j)$ for each $j=1,\ldots ,n$. Two solutions for this problem are proposed in subsequent sections. For the sake of simplicity only cumulative distribution functions are considered.
 
 \subsection{Ryzhov estimator}
+Suppose a data set $\tilde {\mathcal D}$ is divided by $N$ subsamples $\{\tilde{\mathcal D} _i\}_{i=1}^N$ where each subsample $\tilde{\mathcal D}_i$ comprises i.i.d. random variables $\{\xi _{j_i} \}_{j_i=1}^{n_i}$ with the following CDF:
+\begin{equation}
+\label{eq:Ryzhov_mixture_distribution}
+H_i(t) = \mathbb P(\xi _{j_i} \leq t) = \sum _{m=1}^M w_i^mF_m(t), \, i = 1,\ldots, N,
+\end{equation}
+where $w_i^m$ and $F_m$ are defined by \eqref{eq:mixture_probabilities} and \eqref{eq:conditional_distribution} respectively. Censors $\{c_{j_i} \}$ are introduced in the same spirit and together with $\{\xi _{j_i}\}$ form censored data $\tilde{\mathcal D}^c$.
+
+In order to estimate conditional distributions $\{F_m\}_{m=1}^M$ in this settings Ryzhov's estimator can be applied $\#$. It is defined in two steps: first one should estimate each $H_i$ by applying Kaplan-Meier estimator to each subsample $\tilde{\mathcal D}^c_i$, and then use these estimations for deriving $\hat F_m$. That is
+\begin{equation}
+\hat H^{\mathrm{KM}}_i (t) = 1 - \prod _{j_i:\xi ^*_{j_i} \leq t} \Bigg(1 - \frac {\delta _{j_i}}{n_i - j_i + 1}\Bigg)
+\end{equation}
+and
+\begin{equation}
+\label{eq:ryzhov_estimator}
+\hat F^{\mathrm{R}}_m(t) = \sum _{i=1}^N a_i^m \hat H^{\mathrm{KM}}_i(t),
+\end{equation}
+where coefficients $a_i^m$ are determined by the $mi$-th element of a matrix
+\begin{equation}
+(\mathbf W^\top \boldsymbol{\Sigma}^{-1}\mathbf W)^{-1} \mathbf W^\top \boldsymbol{\Sigma}^{-1}
+\end{equation}
+Here, $\boldsymbol{\Sigma} = \mathbf{diag}(\mathbb V [\hat H^{\mathrm{KM}}_1], \ldots, \mathbb V[\hat H^{\mathrm{KM}}_N])$ denotes the variance of Kaplan-Meier estimator. As long as it depends on unknown distributions $H_1, \ldots, H_N$ one can use Greenwood's formula in order to estimate it:
+\begin{equation}
+\hat{\mathbb V}[\hat H^{\mathrm{KM}}_i] = (\hat H^{\mathrm{KM}}_i)^2 \sum _{j_i:\xi _{j_i} \leq t}\frac {\delta _{j_i}}{(n_i - j_i)(n_i - j_i + 1)}
+\end{equation}
+\begin{thm}[Ryzhov]
+Suppose all $n_i = O(n)$, where $n = n_1 + \ldots + n_N$ and mixture probability matrix $\mathbf W$ has full rank. Then $\hat F^R_m$ defined by \eqref{eq:ryzhov_estimator} is uniformly consistent and asymptotically normal estimator of $F_m$ for each $m=1,\ldots , M$.
+\end{thm}
+
 
 \subsection{Khizanov-Maiboroda estimator}
+
+
+
+
+
 
 
 \section{Simulation description}
