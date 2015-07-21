@@ -1,82 +1,6 @@
 library(matrixStats)
 source("R/main.R")
 
-test_KMMM <- function(n, calc_norm=T, plot_graphic=F)
-{
-  m <- 2
-  
-  data <- cbind(abs(rnorm(n, 0, 2)), rchisq(n, 3))
-  
-  mixture_probs <- matrix(c(1:n/n, 1 - 1:n/n), n, 2)
-  
-  mixture_sample <- get_mixture_sample(data, mixture_probs)
-  
-  censored_sample <- get_censored_sample(mixture_sample, rexp(n, 0.05))
-  
-  KMMM <- get_KMMM_estimator(censored_sample, mixture_probs)
-  
-  norm <- numeric()
-  if(calc_norm == T)
-  {
-    #     # |N(0, 2)| quantile = 3.289709
-    #     # Chi(3)    quantile = 6.251388
-    #     KMMM1 <- KMMM[1, sorted_sample < 3.289709]
-    #     sample1 <- sorted_sample[sorted_sample < 3.289709]
-    #     
-    #     KMMM2 <- KMMM[2, sorted_sample < 6.251388]
-    #     sample2 <- sorted_sample[sorted_sample < 6.251388]
-    #     
-    #     norm <- c(norm, get_sup_norm(KMMM1, pnorm(sample1, 0, 2) - pnorm(-sample1, 0, 2)))
-    #     norm <- c(norm, get_sup_norm(KMMM2, pchisq(sample2, 3)))    
-    
-    norm <- c(norm, get_sup_norm(KMMM[, 2], pnorm(KMMM[, 1], 0, 2) - pnorm(-KMMM[, 1], 0, 2)))
-    norm <- c(norm, get_sup_norm(KMMM[, 3], pchisq(KMMM[, 1], 3))) 
-    
-    # point 1.85
-    point <- match(T, KMMM[, 1] > 1.85)
-    norm <- c(norm, KMMM[point, 2] - (pnorm(1.85, 0, 2) - pnorm(-1.85, 0, 2)))
-    norm <- c(norm, KMMM[point, 3] - pchisq(1.85, 3))
-  }  
-  
-  
-  if(plot_graphic==T) 
-  {
-    #x <- 0:5000/100
-    
-    plot(x=KMMM[, 1], y=KMMM[, 2] - (pnorm(KMMM[, 1], 0, 2) - pnorm(-KMMM[, 1], 0, 2)), type="s", col="red")
-    #lines(x=x, y=pnorm(x, 0, 2) - pnorm(-x, 0, 2))
-    
-    plot(x=KMMM[, 1], y=KMMM[, 3] - pchisq(KMMM[, 1], 3), type="s", col="red")
-    #lines(x=x, y=pchisq(x, 3))
-  }
-  
-  norm  
-}
-
-run_test <- function()
-{
-  medians <- numeric()
-  iqrs <- numeric()
-  
-  n <- c(100, 250, 500, 1000, 2000)
-  iter <- 100
-  
-  for(i in 1:length(n))
-  {  
-    norm <- numeric()
-    for(j in 1:iter)
-      norm <- rbind(norm, test_KMMM(n[i]))
-    
-    medians <- rbind(medians, colMedians(norm, T))
-    iqrs <- rbind(iqrs, colIQRs(norm, T))
-    
-    print("*")
-  }
-  
-  print(medians)
-  print(iqrs)
-}
-
 test_Ryzhov <- function()
 {
   n <- c(30, 20, 50, 40, 30)
@@ -145,12 +69,20 @@ compare_KMMM_Ryzhov <- function(censored_samples, mixture_probs, true_data=NA)
   else
   {
     true_data <- true_data[1:nrow(ryzhov), ]
-    norm <- numeric()
+    s_norm <- numeric()
+    p_norm <- numeric()
     for(i in 1:ncol(mixture_probs))
-      norm <- c(norm, c(max(abs(KMMM[, i + 1] - true_data[, i])), 
-                        max(abs(ryzhov[, i + 1] - true_data[, i]))))
+    {
+      s_norm <- c(s_norm, c(max(abs(KMMM[, i + 1] - true_data[, i])), 
+                            max(abs(ryzhov[, i + 1] - true_data[, i]))))
+      
+      pos <- match(T, 1 < KMMM[, 1])
+      p_norm <- c(p_norm, c(abs(KMMM[pos, i + 1] - true_data[pos, i]),
+                            abs(ryzhov[pos, i + 1] - true_data[pos, i])))
+    }
+      
     
-    return(list(KMMM, ryzhov, norm))
+    return(list(KMMM, ryzhov, s_norm, p_norm))
   }
 }
 
@@ -172,35 +104,45 @@ test_KMMM_Ryzhov <- function(n, calc_norm=T, plot_graphic=F)
   {
     plot (x=KMMM_Ryzhov[[1]][, 1],
           y=KMMM_Ryzhov[[2]][, 2] - pchisq(KMMM_Ryzhov[[1]][, 1], 1),
-          type="s", col="blue")
+          type="s", col="blue", main="ChiSq")
     lines(x=KMMM_Ryzhov[[1]][, 1], 
           y=KMMM_Ryzhov[[1]][, 2] - pchisq(KMMM_Ryzhov[[1]][, 1], 1),
           type="s", col="red")
     
     plot (x=KMMM_Ryzhov[[1]][, 1],
           y=KMMM_Ryzhov[[2]][, 3] - pexp(KMMM_Ryzhov[[1]][, 1], 1),
-          type="s", col="blue")
+          type="s", col="blue", main="Exp")
     lines(x=KMMM_Ryzhov[[1]][, 1], 
           y=KMMM_Ryzhov[[1]][, 3] - pexp(KMMM_Ryzhov[[1]][, 1], 1),
           type="s", col="red")
   }
   
-  KMMM_Ryzhov[[3]]
+  c(KMMM_Ryzhov[[3]], KMMM_Ryzhov[[4]])
 }
 
 
-iter <- 100
-n <- rep(500, 2)
-norm <- numeric()
-
-for(i in 1:iter)
+f <- function(size, groups)
 {
-  norm <- rbind(norm, test_KMMM_Ryzhov(n))
+  iter <- 1000
+  n <- rep(size, groups)
+  
+  norm <- numeric()
+  for(i in 1:iter)
+    norm <- rbind(norm, test_KMMM_Ryzhov(n))
+  
+  colMedians(norm)
 }
 
-colnames(norm) <- c("K1", "R1", "K2", "R2")
+tab1 <- numeric()
+tab2 <- numeric()
+for(i in 1:5)
+{
+  tab1 <- rbind(tab1, f(50, i+1))
+  tab2 <- rbind(tab2, f(50*i, 2))
+}
+  
 
-norm
+
 
 
 par(oma=c(0,0,2,0)) 

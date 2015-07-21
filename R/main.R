@@ -1,109 +1,88 @@
-get_mixture_sample <- function(data, mixture_probs)
+
+library(MASS) # ginv
+
+#tested
+kaplan_meier <- function(censored_data)
 {
-  n <- nrow(data)
+  n <- nrow(censored_data)
   
+  #sort sample
+  censored_data <- censored_data[order(censored_data$value), ] 
+  
+  #Kaplan-Meier estimator
+  s <- cumprod(1 - censored_data$is_censored / (n:1)) 
+  
+  #Greenwood estimator
+  var <- s^2 * cumsum(censored_data$is_censored / ((n:1) * (n:1 - 1))) 
+  
+  data.frame(x=censored_data$value, cdf=1-s, var=var)
+}
+
+#tested
+khizanov_maiboroda <- function(censored_data, mixture_weights)
+{
+  n <- nrow(censored_data)
+  
+  #sort sample and weights
+  ord <- order(censored_data$value)
+  censored_data <- censored_data[ord, ]
+  mixture_weights <- mixture_weights[ord, ]
+  
+  #calculate least squares solution
+  ls_coefficients <- ginv(mixture_weights)
+  
+  #correction can be made here
+  
+  #calculate modified Kaplan-Meier estimator
+  1 - apply(1 - t(t(ls_coefficients) * censored_data$is_censored) / 
+              (1 - cbind(0, t(apply(ls_coefficients, 1, cumsum))[, -n])), 1, cumprod)
+}
+
+#NOT tested
+ryzhov <- function(censored_data, mixture_weights, cluster)
+{
+  n <- nrow(mixture_weights)
+  
+  #clustering algorithm can be added here
+  #for now clusters are assumed to be known
+  k <- max(cluster)
+  
+  #run Kaplan-Meier estimator for each cluster
+  #and construct feature matrix
+  km <- list()
+  x <- numeric()
+  for(i in 1:k)
+  {
+    km[[i]] <- kaplan_meier(censored_data[cluster==i, ])
+    x <- rbind(x, colMeans(mixture_weights[cluster==i, ]))
+  }
+
+  #calculate generalized least squares solution
+  #for each point in data set
   result <- numeric()
-  
   for(i in 1:n)
-    result <- c(result, as.numeric(sample(data[i, ], 1, F, mixture_probs[i, ])))
-  
+  {
+    #construct response vector and covariance matrix
+    y <- numeric()
+    wt <- numeric()
+    for(j in 1:k)
+    {
+      pos <- match(FALSE, censored_data[i] >= km[[j]]$x, nrow(km[[j]]))
+      y <- c(y, 1/km[[j]]$cdf[pos])
+      wt <- c(wt, km[[j]]$var[pos])
+    }
+    
+    #calculate GLS coefficients
+    if(!sum(is.na(wt)) && max(wt, T) < Inf)
+      result <- rbind(result, lsfit(x, y, wt)$coef)
+  }
+    
   result
 }
 
-get_mixture_samples <- function(n, data, mixture_probs)
-{
-  m <- ncol(mixture_probs)
-  
-  mixture_samples <- list()
-  
-  accum <- 0
-  for(i in 1:length(n))
-  {
-    mixture_samples[[i]] <- get_mixture_sample(data[(accum + 1):(accum + n[i]), ], 
-                                               mixture_probs[rep(i, n[i]), ])
-    accum <- accum + n[i]
-  }
-  
-  mixture_samples
-}
 
-get_mixture_weights <- function(mixture_probs)
-{
-  solve(t(mixture_probs) %*% mixture_probs) %*% t(mixture_probs)  
-}
 
-get_weighted_mixture_weights <- function(mixture_probs, mixture_probs_weights)
-{
-  # Here weights corresponds to precision matrix
-  # Preconditioning
-  mixture_probs_weights <- mixture_probs_weights / mean(mixture_probs_weights)
-  
-  solve(t(mixture_probs) %*% mixture_probs_weights %*% mixture_probs) %*% 
-    t(mixture_probs) %*% mixture_probs_weights
-}
-
-get_censored_sample <- function(sample, censors)
-{
-  n <- length(sample)
-  
-  censored <- rep(1, n)
-  censored[sample > censors] <- 0
-  sample[sample > censors] <- censors[sample > censors]
-  
-  data.frame(time=sample, censored=censored)
-}
-
-get_censored_samples <- function(samples, censors)
-{
-  censored_samples <- list()
-  
-  accum <- 0
-  for(i in 1:length(samples))
-  {
-    censored_samples[[i]] <- get_censored_sample(samples[[i]], 
-                                                 censors[(accum + 1):(accum + length(samples[[i]]))])
-    accum <- accum + length(samples[[i]])
-  }
-  
-  censored_samples
-}
-
-sort_censored_sample <- function(censored_sample, mixture_probs=numeric())
-{
-  permutation <- order(censored_sample$time) 
-
-  censored_sample$time <- censored_sample$time[permutation]
-  censored_sample$censored <- censored_sample$censored[permutation]
-  
-  if(length(mixture_probs))
-  {
-    mixture_weights <- get_mixture_weights(mixture_probs)[, permutation]
-    censored_sample <- list(sample=censored_sample, weights=mixture_weights)
-  }
-
-  censored_sample
-}
-
-get_KM_GW_estimator <- function(censored_sample)
-{
-  n <- length(censored_sample$time)
-  
-  # sort sample
-  censored_sample <- sort_censored_sample(censored_sample)
-  
-  # estimate survival function
-  S <- 1 - censored_sample$censored[1] / n  
-  for(i in 2:n)
-    S[i] <- S[i - 1] * (1 - censored_sample$censored[i] / (n - i + 1))
-  
-  # estimate variance
-  v <- cumsum(censored_sample$censored / ((n:1) * ((n-1):0)))
-  v[n] <- v[n - 1]
-  
-  # return
-  data.frame(time=censored_sample$time, F=1-S, Var=v * S^2)
-}
-
+#obsolete
 get_Ryzhov_estimator <- function(censored_samples, mixture_probs)
 {
   KM_GW_estimators <- list()
@@ -147,32 +126,5 @@ get_Ryzhov_estimator <- function(censored_samples, mixture_probs)
   cbind(time[permutation], t(H))
 }
 
-get_KMMM_estimator <- function(censored_sample, mixture_probs)
-{
-  n <- length(censored_sample$time)
-  
-  # sort sample
-  censored_sample <- sort_censored_sample(censored_sample, mixture_probs)
-  mixture_weights <- censored_sample$weights
-  censored_sample <- censored_sample$sample
-  
-  # estimate survival function
-  mixture_weights_sums <- cbind(0, mixture_weights[, 1:(n-1)])
-  for(i in 3:n)
-    mixture_weights_sums[, i] <- mixture_weights_sums[, i] + mixture_weights_sums[, i - 1]
-  
-  H <- 1 - t(t(mixture_weights) * censored_sample$censored) / (1 - mixture_weights_sums)
-  for(i in 2:n)
-    H[, i] <- H[, i] * H[, i - 1]
-  
-  cbind(censored_sample$time, t(1 - H))
-}
 
-get_sup_norm <- function(y_estimate, y_true)
-{
-  n <- length(y_estimate)
-  y_estimate <- c(0, y_estimate)
-  
-  max(c(abs(y_estimate[1:n] - y_true),
-        abs(y_estimate[2:(n+1)] - y_true)))
-}
+
