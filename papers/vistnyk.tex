@@ -72,7 +72,7 @@ where coefficients $a_i^m$ are determined by the $mi$-th element of a matrix
 \end{equation}
 Here, $\boldsymbol{\Sigma} = \mathbf{diag}(\mathbb V [\hat H^{\mathrm{KM}}_1], \ldots, \mathbb V[\hat H^{\mathrm{KM}}_N])$ denotes the variance of Kaplan-Meier estimator. As long as it depends on unknown distributions $H_1, \ldots, H_N$ one can use Greenwood's formula in order to estimate it:
 \begin{equation}
-\hat{\mathbb V}[\hat H^{\mathrm{KM}}_i] = (\hat H^{\mathrm{KM}}_i)^2 \sum _{j_i:\xi _{j_i} \leq t}\frac {\delta _{j_i}}{(n_i - j_i)(n_i - j_i + 1)}
+\hat{\mathbb V}[\hat H^{\mathrm{KM}}_i] = (1 - \hat H^{\mathrm{KM}}_i)^2 \sum _{j_i:\xi _{j_i} \leq t}\frac {\delta _{j_i}}{(n_i - j_i)(n_i - j_i + 1)}
 \end{equation}
 \begin{thm}[Ryzhov]
 Suppose all $n_i = O(n)$, where $n = n_1 + \ldots + n_N$ and mixture probability matrix $\mathbf W$ has full rank. Then $\hat F^R_m$ defined by \eqref{eq:ryzhov_estimator} is uniformly consistent and asymptotically normal estimator of $F_m$ for each $m=1,\ldots , M$.
@@ -80,9 +80,18 @@ Suppose all $n_i = O(n)$, where $n = n_1 + \ldots + n_N$ and mixture probability
 
 
 \subsection{Khizanov-Maiboroda estimator}
-
-
-
+Since Ryzhov's estimator suffers from some drawbacks described in previous section one can use an estimator proposed by V. Khizanov and R. Maiboroda $\#$. This estimator takes the form:
+\begin{equation}
+\label{eq:khizanov_maiboroda_estimator}
+\hat F^{\mathrm{KhM}}_m = 1 - \prod _{j : \xi ^*_j \leq t}\bigg( 1 - \frac {a_j^m \delta _j}{1 - \sum _{i:\xi ^*_i < t} a_i^m} \bigg)
+\end{equation}
+where coefficients $a_j^m$ are equal to $mj$-th element of a matrix
+\begin{equation}
+(\mathbf W^\top \mathbf W)^{-1}\mathbf W^\top
+\end{equation}
+\begin{thm}
+Let mixture probability matrix $\mathbf W$ has full rank. Then $\hat F^{\mathrm{KhM}}_m$ defined by \eqref{eq:khizanov_maiboroda_estimator} is uniformly consistent estimator of $F_m$ for each $m=1,\ldots, M$.
+\end{thm}
 
 
 
