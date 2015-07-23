@@ -1,5 +1,38 @@
 library(matrixStats)
 source("R/main.R")
+source("R/sampling.R")
+source("R/extra.R")
+
+#tested
+generate_input <- function(n, m, clusters)
+{
+  #sample data from ChiSquared distribution
+  #with different parameter
+  #NOTE: another distribution could be used
+  data <- numeric()
+  for(i in 1:m)
+    data <- cbind(data, rchisq(n, i))
+  
+  #sample mixture weights
+  #with respect to clusters
+  k <- max(clusters)
+  mixture_weights <- sample_mixture_weights(k, m)
+  
+  #sample data from mixture distribution
+  #and censor it using Uniform distribution
+  #NOTE: another distribution could be used
+  data <- sample_mixture_distribution(data, replicate_rows(mixture_weights, as.data.frame(table(clusters))$Freq))
+  censored_data <- censor_data(data, runif(n, 0, 10))
+  
+  list(censored_data=censored_data, mixture_weights=mixture_weights)
+}
+
+
+
+
+
+
+########################################################
 
 test_Ryzhov <- function()
 {

@@ -1,7 +1,8 @@
-
+#tested
 sample_mixture_weights <- function(n, m)
 {
-  #TODO: adopt for ryzhov estimator
+  mixture_weights <- matrix(runif(n*m), n, m)
+  mixture_weights <- mixture_weights / rowSums(mixture_weights)
 }
 
 #tested
