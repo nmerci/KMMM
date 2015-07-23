@@ -10,7 +10,7 @@ get_frequencies <- function(vec)
   as.data.frame(table(vec))$Freq
 }
 
-#forms an array (1,1,..,1, 2,2,..2, .., n,n,..n)
+#forms an array (1,1,..,1, 2,2,..2, .., k,k,..,k)
 replicate_numbers <- function(k, n)
 {
   as.vector(sapply(1:k, rep, n))

@@ -1,4 +1,5 @@
-library(MASS) # ginv
+library(MASS)
+library(stats)
 
 #tested
 kaplan_meier <- function(censored_data)
@@ -39,14 +40,16 @@ khizanov_maiboroda <- function(censored_data, mixture_weights)
 }
 
 #tested
-ryzhov <- function(censored_data, mixture_weights, cluster)
+ryzhov <- function(censored_data, mixture_weights, cluster=NA)
 {
   n <- nrow(mixture_weights)
   
-  #clustering algorithm can be added here
-  # >>>
+  if(is.na(cluster[1]))
+  {
+    #clustering algorithm can be added here
+    # >>>
+  }
   
-  #for now clusters are assumed to be known
   k <- max(cluster)
   
   #run Kaplan-Meier estimator for each cluster
