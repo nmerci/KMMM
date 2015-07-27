@@ -5,6 +5,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 
+\usepackage{graphicx}
+
 \theoremstyle{plain}
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{lem}[thm]{Lemma}
@@ -41,6 +43,13 @@ For each object $O_j$ there exists a positive characteristic $\xi _j = \xi (O_j)
 \label{eq:conditional_distribution}
 F_m (A) = \mathbb P(\xi _j \in A \mid \mathrm{ind}(O_j) = m), \, m=1,\ldots , M
 \end{equation}
+\begin{rem}
+Mixture probabilities \eqref{eq:mixture_probabilities} satisfy normalization property
+\begin{equation}
+\label{eq:mix_prob_constraint}
+\sum _{m=1}^M w_j^m = 1, \, j = 1,\ldots, n
+\end{equation}
+\end{rem}
 
 Consider the case in which \emph{true data} $\mathcal D = \{\xi _j\}_{j=1}^n$ are randomly right-censored. That is there exists a sequence of positive random variables $\{c_j\}_{j=1}^n$ such that only \emph{censored data} $\mathcal D^c = \{(\xi _j^*, \delta _j)\}_{j=1}^n$, where $\xi _j^* = \min (\xi _j, c_j)$ and $\delta _j = \mathbf 1\{\xi _j \leq c_j\}$ for each $j=1,\ldots ,n$, are observed. Here, $c_j$'s are called \emph{censors} and their conditional distributions are given by:
 \begin{equation}
@@ -50,6 +59,7 @@ G_m (A) = \mathbb P(c _j \in A \mid \mathrm{ind}(O_j) = m),\, m=1,\ldots , M
 One problem is to estimate conditional distributions $\{F_m\}_{m=1}^M$ from censored data $\mathcal D^c$ and mixture probabilities $\mathbf W = (w_j^m)_{j,m=1}^{n,M}$. Vectors $(\xi _j, c _j)$ are assumed to be independent as well as variables $\xi _j$ and $c_j$ are conditionally independent given $\mathrm{ind}(O_j)$ for each $j=1,\ldots ,n$. Two solutions for this problem are proposed in subsequent sections. For the sake of simplicity only cumulative distribution functions are considered.
 
 \subsection{Ryzhov estimator}
+\label{subsec:ryzhov_estimator}
 Suppose a data set $\tilde {\mathcal D}$ is divided by $N$ subsamples $\{\tilde{\mathcal D} _i\}_{i=1}^N$ where each subsample $\tilde{\mathcal D}_i$ comprises i.i.d. random variables $\{\xi _{j_i} \}_{j_i=1}^{n_i}$ with the following CDF:
 \begin{equation}
 \label{eq:Ryzhov_mixture_distribution}
@@ -92,20 +102,46 @@ where coefficients $a_j^m$ are equal to $mj$-th element of a matrix
 \begin{thm}
 Let mixture probability matrix $\mathbf W$ has full rank. Then $\hat F^{\mathrm{KhM}}_m$ defined by \eqref{eq:khizanov_maiboroda_estimator} is uniformly consistent estimator of $F_m$ for each $m=1,\ldots, M$.
 \end{thm}
-
+\begin{rem}
+Asymptotic normality of Khizanov-Maiboroda's estomator has not been proven yet.
+\end{rem}
 
 
 
 \section{Simulation description}
 \label{sec:Simulation_description}
+This section introduces settings for comparison of two estimators described in previously. Since Ryzhov's estimator requires a special form of input  only $\tilde{\mathcal D}$ data described in \ref{subsec:ryzhov_estimator} are considered. That is, mixture probability matrix $\mathbf W$ for Khizanov-Maiboroda's estimator is obtained by replicating each $i$-th row of respective matrix $n_i$ times for $i=1,\ldots, N$.
+
+For each experiment mixture probability matrix is drawn uniformly from the set of all matrices which satisfy normalization property \eqref{eq:mix_prob_constraint}. In order to prevent ill-conditioned cases only matrices with $\det (\mathbf W^\top \mathbf W) > 0.2$ are considered. For the sake of simplicity all $n_i,i = 1,\ldots, N$ are assumed to be equal and further denoted simply by $n$. Next section provides simulation results for two-component mixture, i.e. $M=2$, where the quantity
+\begin{equation}
+\mathbb E \sup _{t} |\hat F_m(t) - F_m(t)|, \, m=1,2
+\end{equation}
+is compared for different values of $n$ and $N$.
 
 \section{Simulation results}
 \label{sec:Simulation_results}
+Let $F_1\sim \chi ^2_1$ and $F_2\sim \chi ^2_2$ have chi-squared distribution with parameters $1$ and $2$ respectively. All censors $c_j$ have the same uniform distribution $G\sim \mathcal U(0, 8)$ which corresponds to approximately $20\%$ of censored observations. Consider the case in which $N=2$ is fixed while $n$ varies from $100$ to $1000$. Figure \ref{fig:1} illustrates that an error of each estimator becomes almost equal as $n$ increases.
+\begin{figure}
+\centering
+\caption{\label{fig:1}Error comparison for fixed number of subsamples $N=2$. 1000 iterations are used for estimating expectation of supremum error.}
+\includegraphics[scale=0.55]{ChiSq1_n.jpeg}
+\includegraphics[scale=0.55]{ChiSq2_n.jpeg}
+\end{figure}
+
+
+However, if one fixes $n=50$ and varies $N$ from $2$ to $20$ then Khizanov-Maiboroda's estimator starts to outperform Ryzhov's estimator as $N$ increases. This can be noticed in Figure \ref{fig:2}.
+\begin{figure}
+\centering
+\caption{\label{fig:2}Error comparison for fixed number of observations in each subsample $n=50$. 1000 iterations are used for estimating expectation of supremum error.}
+\includegraphics[scale=0.55]{ChiSq1_G.jpeg}
+\includegraphics[scale=0.55]{ChiSq2_G.jpeg}
+\end{figure}
+
+
 
 \section{Conclusions}
 \label{sec:Conclusions}
-
-
+...
 
 
 \end{document}
