@@ -3,8 +3,15 @@ source("R/extra.R")
 #tested
 sample_mixture_weights <- function(n, m)
 {
-  mixture_weights <- matrix(runif(n*m), n, m)
-  mixture_weights <- mixture_weights / rowSums(mixture_weights)
+  mixture_weights <- matrix(0)
+  
+  while(det(t(mixture_weights) %*% mixture_weights) < 0.2)
+  {
+    mixture_weights <- matrix(runif(n*m), n, m)
+    mixture_weights <- mixture_weights / rowSums(mixture_weights)
+  }
+  
+  mixture_weights
 }
 
 #tested
@@ -48,7 +55,7 @@ sample_data <- function(n, m, clusters)
   #and censor it using Uniform distribution
   #NOTE: another distribution could be used
   data <- sample_mixture_distribution(data, mixture_weights)
-  censored_data <- sample_censored_data(data, runif(n, 0, 10))
+  censored_data <- sample_censored_data(data, runif(n, 0, 8))
   
   list(censored_data=censored_data, mixture_weights=mixture_weights)
 }

@@ -21,12 +21,15 @@ compare_estimators <- function(n, m, clusters)
   km <- khizanov_maiboroda(data$censored_data, data$mixture_weights)
   r <- ryzhov(data$censored_data, data$mixture_weights, clusters)
   
+  x <- sort(data$censored_data$value)
   #plotting
-  plot_estimate(sort(data$censored_data$value), km)
-  plot_estimate(sort(data$censored_data$value), r)
+  #plot_estimate(x, km)
+  #plot_estimate(x, r)
   
   #compare deviation
-  #TODO: implement some kind of goodness of fit
+  true_value <- sapply(1:m, pchisq, q=x)
+  true_value[is.na(r)] <- NA
+  list(km=km - true_value, r=r - true_value)
 }
 
 
