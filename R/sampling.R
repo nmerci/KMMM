@@ -38,22 +38,14 @@ sample_censored_data <- function(data, censors)
 }
 
 #tested
-sample_data <- function(n, m, clusters)
+sample_data <- function(n, m)
 {
-  #sample data from ChiSquared distribution
-  #with different parameter
-  #NOTE: another distribution could be used
   data <- numeric()
   for(i in 1:m)
     data <- cbind(data, rchisq(n, i))
   
-  #sample mixture weights with respect to clusters
-  k <- max(clusters)
-  mixture_weights <- replicate_rows(sample_mixture_weights(k, m), get_frequencies(clusters))
+  mixture_weights <- sample_mixture_weights(n, m)
   
-  #sample data from mixture distribution
-  #and censor it using Uniform distribution
-  #NOTE: another distribution could be used
   data <- sample_mixture_distribution(data, mixture_weights)
   censored_data <- sample_censored_data(data, runif(n, 0, 8))
   

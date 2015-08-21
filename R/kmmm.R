@@ -19,6 +19,23 @@ correct_coefficients <- function(ls_coefficients)
   ls_coefficients[, 1:n]
 }
 
+#grouping works for nx2 weight matrices only
+group_mixture_weights <- function(mixture_weights, n_groups)
+{
+  clusters <- rep(0, nrow(mixture_weights))
+  
+  for(i in 1:nrow(mixture_weights))
+    clusters[i] <- match(T, mixture_weights[i, 1] < (1:n_groups) / n_groups)
+
+  for(i in 1:n_groups)
+  {
+    mixture_weights[i, 1] <- i/n_groups - 0.5/n_groups
+    mixture_weights[i, 2] <- 1 - mixture_weights[i, 1]
+  }
+  
+  list(mixture_weights=mixture_weights[sort(unique(clusters)), ], clusters=clusters)
+}
+
 #tested
 khizanov_maiboroda <- function(censored_data, mixture_weights)
 {
@@ -58,32 +75,18 @@ kaplan_meier <- function(censored_data)
 }
 
 #tested
-ryzhov <- function(censored_data, mixture_weights, cluster=NA)
+ryzhov <- function(censored_data, mixture_weights, clusters)
 {
-  n <- nrow(mixture_weights)
-  
-  if(is.na(cluster[1]))
-  {
-    #clustering algorithm can be added here
-    # >>>
-  }
-  
-  k <- max(cluster)
+  n <- nrow(censored_data)
+  k <- nrow(mixture_weights)
   
   #run Kaplan-Meier estimator for each cluster
-  #and construct feature matrix
   km <- list()
-  x <- numeric()
   for(i in 1:k)
-  {
-    km[[i]] <- kaplan_meier(censored_data[cluster==i, ])
-    x <- rbind(x, colMeans(mixture_weights[cluster==i, ]))
-  }
-  
-  #calculate generalized least squares solution
-  #for each point in data set
+    km[[i]] <- kaplan_meier(censored_data[clusters==i, ])
+
+  #calculate generalized least squares solution for each point in data set
   censored_data$value <- sort(censored_data$value)
-  
   result <- numeric()
   for(i in 1:n)
   {
@@ -101,7 +104,7 @@ ryzhov <- function(censored_data, mixture_weights, cluster=NA)
     
     #calculate GLS coefficients (if possible)
     if(!sum(is.na(wt)) && max(wt, T) < Inf) #this condition could be improved
-      result <- rbind(result, lsfit(x, y, wt, F)$coef)
+      result <- rbind(result, lsfit(mixture_weights, y, wt, F)$coef)
     else
       result <- rbind(result, rep(NA, ncol(mixture_weights)))
   }
