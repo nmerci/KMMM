@@ -1,8 +1,5 @@
 source("R/extra.R")
 
-library(MASS)
-library(stats)
-
 correct_coefficients <- function(ls_coefficients)
 {
   n <- ncol(ls_coefficients)
