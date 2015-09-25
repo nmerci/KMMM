@@ -105,6 +105,9 @@ where coefficients $a_j^m$ are equal to $mj$-th element of a matrix
 (\mathbf P^\top \mathbf P)^{-1}\mathbf P^\top
 \end{equation}
 with a mixture probability matrix $\mathbf P=(p_{j}^m)_{j,m=1}^{n, M}$.
+\begin{rem}
+	Note that this matrix differs from one in Ryzhov's estimator, i.e. it is $n\times M$ rather than $N\times M$.
+\end{rem}
 \begin{thm}
 Let mixture probability matrix $\mathbf P$ satisfy the following property: 
 \begin{equation*}
@@ -113,7 +116,7 @@ Let mixture probability matrix $\mathbf P$ satisfy the following property:
 Then $\hat F^{\mathrm{PI}}_m$ defined by \eqref{eq:khizanov_maiboroda_estimator} is uniformly consistent estimator of $F_m$ for each $m=1,\ldots, M$.
 \end{thm}
 \begin{rem}
-Asymptotic normality of Khizanov-Maiboroda's estomator has not been proven yet.
+Asymptotic normality of product-integral estomator has not been proven yet.
 \end{rem}
 
 
@@ -129,14 +132,13 @@ This section introduces settings for comparison of two estimators described prev
 \begin{rem}
 The last step in previous algorithm is performed in order to avoid ill-conditioned cases.
 \end{rem}
-Since Ryzhov's estimator requires special form of input data, the following procedure to the mixture probability matrix $\mathbf P$ is applied : 
+Since Ryzhov's estimator requires a special form of input data, the following rounding procedure is considered: 
 \begin{itemize}
-	\item[1.] Fix a number of bins $N\geq 2$ and consider a partition $\{\mathcal B_1, \ldots, \mathcal B_N\}$ of unit interval $[0, 1)$: $$ \bigcup _{i = 1}^N \mathcal B_i = \bigcup _{i = 1}^N[\frac {i - 1}{N}, \frac iN)$$
+	\item[1.] Fix a number of bins $N\geq 2$ and consider a partition $\{\mathcal B_1, \ldots, \mathcal B_N\}$ of unit interval $[0, 1)$, where $$ \mathcal B_i = [\frac {i - 1}{N}, \frac iN),\,i=1,\ldots, N$$
 	\item[2.] Assign each $p_j^m$ to the center of a bin it belongs to
 \end{itemize}
-\begin{rem}
-A subsample of censored data $\mathcal D^c$ which corresponding mixture probabilities belong to the $i$-th bin forms $\tilde{\mathcal D}_i^c$.
-\end{rem}
+Thereby, a subsample of censored data $\mathcal D^c$ which corresponding mixture probabilities belong to the $i$-th bin forms $\tilde{\mathcal D}_i^c$.
+
 Next section provides simulation results for two-component mixture, i.e. $M=2$, where the quantity
 \begin{equation}
 \mathbb E \sup _{t} |\hat F_m(t) - F_m(t)|, \, m=1,2
@@ -145,11 +147,37 @@ is of interest.
 
 \section{Simulation results}
 \label{sec:Simulation_results}
-Let $F_1\sim \chi ^2_1$ and $F_2\sim \chi ^2_2$ have chi-squared distribution with $1$ and $2$ degrees of freedom respectively. All censors $c_j$ have the same uniform distribution $G\sim \mathcal U(0, 8)$ which corresponds to approximately $20\%$ of censored observations. 
+Let $F_1\sim \chi ^2_1$ and $F_2\sim \chi ^2_2$ have chi-squared distribution with $1$ and $2$ degrees of freedom respectively. All censors $c_j$ have the same uniform distribution $G\sim \mathcal U(0, 8)$ which corresponds to approximately $20\%$ of censored observations. An estimation for the quantity $\mathbb E \sup _{t} |\hat F_m(t) - F_m(t)|$ is given by averaging 1000 independent experiments.
 
-Figure \ref{fig:1} provides simulation results for different number of bins $N$. An $X$ axis represents a sample size $n$ while $Y$ axis represents an estimation for the quantity $\mathbb E \sup _{t} |\hat F_m(t) - F_m(t)|$ based on 1000 independent experiments.
+Figure \ref{fig:1} represents simulation results, in which product-integral estimator uses true mixture probability matrix $\mathbf P$ while Ryzhov's estimator uses its rounded version defined in previous section. An $X$ axis states for a sample size $n$ while $Y$ axis stays for the chosen error measure.
 
-As one can see, for sufficiently large sample size and reasonable number of bins estimators performs almost equally. The amount of bins can be treated as a bias-variance trade-off, i.e. small values of $N$ produces high bias low variance estimations and vice versa.
+\begin{figure}
+	\centering
+	\caption{\label{fig:1}Error comparison for different rounding in Ryzhov's estimator}
+	\includegraphics[scale=0.35]{12.jpeg}
+	\includegraphics[scale=0.35]{22.jpeg}
+	\includegraphics[scale=0.35]{13.jpeg}
+	\includegraphics[scale=0.35]{23.jpeg}
+	\includegraphics[scale=0.35]{15.jpeg}
+	\includegraphics[scale=0.35]{25.jpeg}
+\end{figure}
+
+As one can see, for sufficiently large sample size and reasonable number of bins estimators perform almost equally. The amount of bins can be treated as a bias-variance trade-off, i.e. small values of $N$ produces high bias low variance estimations and vice versa.
+
+Figure 
+
+Figure \ref{fig:3} shows how the error measure changes  with different values of $n$ and $N$. Assume that all $n_i, i=1,\ldots, N$ are equal. Top plots shows simulation results for fixed $N=2$ and different values of $n$. On the other hand bottom plots represents results for fixed $n_i=100$ and different values of $N$.
+
+\begin{figure}
+	\centering
+	\caption{\label{fig:3}Error comparison for fixed $n$ and $N$}
+	\includegraphics[scale=0.25]{cs1N2.png}
+	\includegraphics[scale=0.25]{cs2N2.png}
+	\includegraphics[scale=0.25]{cs1n100.png}
+	\includegraphics[scale=0.25]{cs2n100.png}
+\end{figure}
+
+When concentrations are drawn from a finite set, two bottom plots of Figure \ref{fig:3} show that performance of Ryzhov's estimator decreases as cardinality of this set increases. However, top two plots indicate that for the smallest possible value of $N$ (i.e. $N=2$) error of the two estimators is comparable.
 
 
 \section{Conclusions}
@@ -157,15 +185,6 @@ As one can see, for sufficiently large sample size and reasonable number of bins
 Following simulation results product-integral estimator generally outperforms one proposed by Ryzhov, but for large samples this advantage may be negligible. However, for small size samples  Ryzhov's estimator remains still reasonable and can provide better estimations in some cases.
 
 
-\begin{figure}
-\centering
-\caption{\label{fig:1}Error comparison for different number of bins $N$}
-\includegraphics[scale=0.35]{12.jpeg}
-\includegraphics[scale=0.35]{22.jpeg}
-\includegraphics[scale=0.35]{13.jpeg}
-\includegraphics[scale=0.35]{23.jpeg}
-\includegraphics[scale=0.35]{15.jpeg}
-\includegraphics[scale=0.35]{25.jpeg}
-\end{figure}
+
 
 \end{document}
